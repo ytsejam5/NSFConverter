@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="webapp/WEB-INF/src"/>
+	<classpathentry kind="lib" path="webapp/WEB-INF/libext/catalina.jar"/>
+	<classpathentry kind="lib" path="webapp/WEB-INF/libext/servlet-api.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jvm"/>
+	<classpathentry kind="lib" path="webapp/WEB-INF/lib/marklogic-xcc-7.0.5.jar"/>
+	<classpathentry kind="output" path="webapp/WEB-INF/classes"/>
+</classpath>
