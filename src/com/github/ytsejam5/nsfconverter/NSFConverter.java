@@ -75,7 +75,18 @@ public final class NSFConverter {
 		private Document document = null;
 		private NSFWriter writer = null;
 		private Map<String, String> contentIDRelatedFileNamesMap = null;
+		private Map<String, String> contentIDInlineObjectContentTypeMap = null;
+		private Map<String, String> contentIDInlineObjectMap = null;
 		private List<String> attachementFileNames = null;
+		private boolean embedRelatedObjects = true;
+		
+		NSFDocumentHandler(){
+			this(true /* embeding related objects into main-object */);
+		}
+		
+		NSFDocumentHandler(boolean embedRelatedObjects){
+			this.embedRelatedObjects = embedRelatedObjects;
+		}
 		
 		private void handleDocument(Document document, NSFWriter writer) throws NotesException, IOException {	
 			document.convertToMIME(Document.CVT_RT_TO_HTML, 0);
@@ -85,8 +96,13 @@ public final class NSFConverter {
 		
 			this.contentIDRelatedFileNamesMap = new HashMap<String, String>();
 			this.attachementFileNames = new LinkedList<String>();
+			if (embedRelatedObjects){
+				contentIDInlineObjectContentTypeMap = new HashMap<String, String>();
+				contentIDInlineObjectMap = new HashMap<String, String>();
+			}
+			
 			for (MIMEEntity entry = document.getMIMEEntity(); entry != null; entry = entry.getNextSibling()){
-				fillRelatedFileNames(entry);
+				fillRelatedFileInformation(entry);
 			}	
 
 			for (MIMEEntity entry = document.getMIMEEntity(); entry != null; entry = entry.getNextSibling()){
@@ -94,10 +110,10 @@ public final class NSFConverter {
 			}
 		}
 
-		private void fillRelatedFileNames(MIMEEntity entry) throws NotesException {		
+		private void fillRelatedFileInformation(MIMEEntity entry) throws NotesException {		
 			if (NSFConverterUtils.isMultipartContent(entry)){
 				for (MIMEEntity child = entry.getFirstChildEntity(); child != null; child = child.getNextSibling()){
-					fillRelatedFileNames(child);
+					fillRelatedFileInformation(child);
 				}
 
 			} else if (!NSFConverterUtils.isMainObject(entry)){
@@ -107,6 +123,15 @@ public final class NSFConverter {
 				
 				if (NSFConverterUtils.isAttachment(entry)){
 					attachementFileNames.add(fileName);
+					
+				}
+				
+				if (embedRelatedObjects && !NSFConverterUtils.isAttachment(entry)){
+					entry.decodeContent();
+					entry.encodeContent(MIMEEntity.ENC_BASE64);
+					
+					contentIDInlineObjectContentTypeMap.put(contentID, NSFConverterUtils.getContentType(entry));
+					contentIDInlineObjectMap.put(contentID, entry.getContentAsText().replaceAll("[\n|\r]", "") /* base64 encoded content */);
 				}
 			}
 		}
@@ -120,7 +145,10 @@ public final class NSFConverter {
 			} else if (NSFConverterUtils.isMainObject(entry)){
 				handleMainObject(entry);
 				
-			} else {
+			} else if (NSFConverterUtils.isAttachment(entry)){
+				handleRelatedObject(entry);
+				
+			} else if (!embedRelatedObjects){
 				handleRelatedObject(entry);
 			}
 		}
@@ -131,7 +159,11 @@ public final class NSFConverter {
 			String content = entry.getContentAsText();
 			
 			content = complementContentType(content);
-			content = replaceRelatedObjectRefs(content);
+			if (embedRelatedObjects){
+				content = embedRelatedObjects(content);
+			} else {
+				content = replaceRelatedObjectRefs(content);
+			}
 			content = replaceAttachmentObjectRefs(content);
 
 			String objectID = getMainObjectID();
@@ -176,11 +208,29 @@ public final class NSFConverter {
 		private String replaceRelatedObjectRefs(String content) throws NotesException {
 			for (Iterator<String> iterator = contentIDRelatedFileNamesMap.keySet().iterator(); iterator.hasNext();) {
 				String contentID = (String) iterator.next();
-				String fileName = (String)contentIDRelatedFileNamesMap.get(contentID);
-				String objectID = getRelatedObjectID(fileName);
-				String viewableURL = writer.getViewableURL(objectID);
-				
-				content = content.replaceAll("cid:" + contentID, viewableURL);
+				if (content.contains("cid:" + contentID)){
+					String fileName = (String)contentIDRelatedFileNamesMap.get(contentID);
+					String objectID = getRelatedObjectID(fileName);
+					String viewableURL = writer.getViewableURL(objectID);
+					
+					content = content.replaceAll("cid:" + contentID, viewableURL);
+				}
+			}
+			
+			return content;
+		}
+		
+
+		private String embedRelatedObjects(String content) {
+			for (Iterator<String> iterator = contentIDRelatedFileNamesMap.keySet().iterator(); iterator.hasNext();) {
+				String contentID = (String) iterator.next();
+				if (content.contains("cid:" + contentID)){
+					String contentType = contentIDInlineObjectContentTypeMap.get(contentID);
+					String base64EncodedContent = contentIDInlineObjectMap.get(contentID);
+					String embededData = "data:" + contentType + ";base64," + base64EncodedContent;
+					
+					content = content.replaceAll("cid:" + contentID, embededData);
+				}
 			}
 			
 			return content;
