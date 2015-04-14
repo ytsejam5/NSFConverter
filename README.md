@@ -20,7 +20,7 @@ NSFConverter attempts to convert to HTMLs from documents extracted from Lotus Do
 
 ## How to use
 - CASE 1: calling from MarkLogic CPF modules:
-``` example.xqr
+```
 let $converter-url := "http://${CONVERTER_HOST}:${CONVERTER_PORT}/nsfconveter"
 let $document := fn:doc($cpf:document-uri)
 let $filtered-data := xdmp:document-filter($document)
@@ -35,3 +35,7 @@ return
 ```
 curl -X GET --data-binary @test.nsf http://${CONVERTER_HOST}:${CONVERTER_PORT}/nsfconveter
 ```
+
+## Screen Capture
+![original vs. converted](https://raw.githubusercontent.com/ytsejam5/NSFConverter/master/screencapture/capture001.png "original vs. converted")
+
