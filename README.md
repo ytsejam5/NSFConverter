@@ -1,26 +1,26 @@
 # NSFConverter
 A sample tool to convert Lotus Domino/Notes NSF files to MarkLogic documents
 
-## 概要
-HTTP POSTのBodyから喰べたnsfファイルからNotes文書を抽出してMarkLogicのドキュメントとして登録します。
-MarkLogicのフィルタが.nsf対応謳っているのですが、コンテンツタイプしか取ってくれないようなので(要仕様確認)拵えました。
+## Overview
+NSFConverter attempts to convert to HTMLs from documents extracted from Lotus Domino/Notes NSF files input from HTTP body stream instead of "File type identification only"-ed ISYS Document Filters(*), and post HTMLs to MarkLogic XDBC Server.
+(*) http://www.marklogic.com/resources/marklogic-document-format-support/resource_download/datasheets/
 
-## 必要なもの
-- Lotus Notes ※バンドルのjvmとjarを使います。変換用サーバとして利用する分のライセンスだけは必要になるかと。
-- XCC/J ※MarkLogic社のサイトからGETします。
-- Javaアプリケーションサーバ ※Tomcatで動作確認しています。クラスパス設定あたりは tomcat-bin-sample 以下あたりをご覧ください。
 
-## インストール
-1. ソースは1.5互換でコンパイルしてください。最新バージョンでコンパイルするとNotesバンドルのjvmにはじかれます。
-1. classファイルを webapp/WEB-INF/classes(/com/github/ytsejam5/nsfconverter) 以下に置きます。
-1. web.xmlにMarkLogicとの接続設定がありますので、ご用意しているXDBCアプリケーションサーバとの接続設定を埋めてください。
-1. webappをデプロイ
-で動くはずです。※不足してたら書き足します。。
+## Requirements
+- Lotus Notes JVM and jar files (tested with Notes 9)
+- MarkLogic and XCC/J library jar files (testd with MarkLogic 7.0.5)
+- Java Appicatin Server (tested with Tomcat 7.0.59)
 
-## 使い方
-- MarkLogicのCPFあたりから↓で呼び出すと幸せになれると思います。
-```
-let $converter-url := "http://${コンバータのホスト}:${ポート}/nsfconveter"
+## Instration
+1. Compile sources included in com.github.ytsejam5.nsfconverter package for compatibility with Java 1.5.
+1. Place class files to web application library directory, webapp/WEB-INF/classes(/com/github/ytsejam5/nsfconverter).
+1. Open webapp/WEB-INF/web.xml and edit cofigration to connect your MarkLogic XDBC server.
+1. Deploy webapp/ to you web application server. (If using Tomcat, refer files in tomcat-bin-sample/ to set Domino/Notes related parameters in your environment.)
+
+## How to use
+- CASE 1: calling from MarkLogic CPF modules:
+``` example.xqr
+let $converter-url := "http://${CONVERTER_HOST}:${CONVERTER_PORT}/nsfconveter"
 let $document := fn:doc($cpf:document-uri)
 let $filtered-data := xdmp:document-filter($document)
 let $content-type := $filtered-data/*:head/*:meta[@name eq "content-type"]/@content
@@ -30,7 +30,7 @@ return
 	) else ()
 ```
 
-- curlから↓でも登録できます。
+- CASE 2: calling from curl.
 ```
-curl -X GET --data-binary @test.nsf http://localhost:58080/nsfconverter
+curl -X GET --data-binary @test.nsf http://${CONVERTER_HOST}:${CONVERTER_PORT}/nsfconveter
 ```
