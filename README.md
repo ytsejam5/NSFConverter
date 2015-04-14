@@ -2,7 +2,7 @@
 A sample tool to convert Lotus Domino/Notes NSF files to MarkLogic documents
 
 ## Overview
-NSFConverter attempts to convert to HTMLs from documents extracted from Lotus Domino/Notes NSF files input from HTTP body stream instead of "File type identification only"-ed ISYS Document Filters(*1), and post HTMLs to MarkLogic XDBC Server.
+NSFConverter attempts to convert to HTMLs from documents extracted from Lotus Domino/Notes NSF files input from HTTP body stream instead of "File type identification only" ISYS Document Filters(*1), and post HTMLs to MarkLogic XDBC Server.
 
 (*1) http://www.marklogic.com/resources/marklogic-document-format-support/resource_download/datasheets/
 
@@ -10,7 +10,7 @@ NSFConverter attempts to convert to HTMLs from documents extracted from Lotus Do
 ## Requirements
 - Lotus Notes JVM and jar files (tested with Notes 9)
 - MarkLogic and XCC/J library jar files (testd with MarkLogic 7.0.5)
-- Java Appicatin Server (tested with Tomcat 7.0.59)
+- Java Application Server (tested with Tomcat 7.0.59)
 
 ## Installation
 1. Compile sources included in com.github.ytsejam5.nsfconverter package for compatibility with Java 1.5.
