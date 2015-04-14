@@ -11,7 +11,7 @@ NSFConverter attempts to convert to HTMLs from documents extracted from Lotus Do
 - MarkLogic and XCC/J library jar files (testd with MarkLogic 7.0.5)
 - Java Appicatin Server (tested with Tomcat 7.0.59)
 
-## Instration
+## Installation
 1. Compile sources included in com.github.ytsejam5.nsfconverter package for compatibility with Java 1.5.
 1. Place class files to web application library directory, webapp/WEB-INF/classes(/com/github/ytsejam5/nsfconverter).
 1. Open webapp/WEB-INF/web.xml and edit cofigration to connect your MarkLogic XDBC server.
